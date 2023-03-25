@@ -9,7 +9,9 @@ pub enum Commands {
     },
     /// List all links
     Ls {
+        #[arg(short, long)]
         flux_id: Option<u64>,
+        #[arg(short, long)]
         webhook_id: Option<u64>
     },
     /// Remove a link

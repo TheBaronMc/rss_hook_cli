@@ -13,6 +13,10 @@ use clap::{Parser, Subcommand};
 pub struct CliParser {
     #[command(subcommand)]
     commands: Commands,
+    #[arg(short, long, default_value = "localhost")]
+    server: Option<String>,
+    #[arg(short, long, default_value = "3000")]
+    port: Option<i64>
 }
 
 #[derive(Subcommand)]

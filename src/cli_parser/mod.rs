@@ -7,8 +7,8 @@ mod deliveries;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "MyApp")]
-#[command(author = "Kevin K. <kbknapp@gmail.com>")]
+#[command(name = "RSS Hook CLI")]
+#[command(author = "Charly G.")]
 #[command(version = "1.0")]
 pub struct CliParser {
     #[command(subcommand)]

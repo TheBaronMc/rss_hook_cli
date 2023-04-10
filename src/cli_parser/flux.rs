@@ -14,5 +14,7 @@ pub enum Commands {
     Update {
         flux_id: u64,
         flux_url: String
-    }
+    },
+    /// List all RSS Flux
+    Ls {}
 }

@@ -1,10 +1,10 @@
 use super::Client;
+use super::super::types::Flux;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 use reqwest::Error;
-use std::collections::HashMap;
 
-pub async fn get_all(client: Client) -> Result<HashMap<String, String>, Error> {
+pub async fn get_all(client: Client) -> Result<Vec<Flux>, Error> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -13,11 +13,11 @@ pub async fn get_all(client: Client) -> Result<HashMap<String, String>, Error> {
     let body = String::from("");
 
     client.get(path, Some(headers), Some(body)).await?
-    .json::<HashMap<String, String>>().await
+    .json::<Vec<Flux>>().await
 }
 
 
-pub async fn create(client: Client, flux_url: String) -> Result<HashMap<String, String>, Error> {
+pub async fn create(client: Client, flux_url: String) -> Result<Flux, Error> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -26,29 +26,200 @@ pub async fn create(client: Client, flux_url: String) -> Result<HashMap<String, 
     let body = format!("{{\"url\":\"{}\"}}", flux_url);
 
     client.post(path, Some(headers), Some(body)).await?
-    .json::<HashMap<String, String>>().await
+    .json::<Flux>().await
 }
 
-pub async fn delete(client: Client, flux_id: i64) -> Result<HashMap<String, String>, Error> {
+pub async fn delete(client: Client, flux_id: i64) -> Result<Flux, Error> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
-    let body = format!("{{\"id\":\"{}\"}}", flux_id);
+    let body = format!("{{\"id\":{}}}", flux_id);
 
     client.delete(path, Some(headers), Some(body)).await?
-    .json::<HashMap<String, String>>().await
+    .json::<Flux>().await
 }
 
-pub async fn update(client: Client, flux_id: i64, flux_url: String) -> Result<HashMap<String, String>, Error> {
+pub async fn update(client: Client, flux_id: i64, flux_url: String) -> Result<Flux, Error> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
-    let body = format!("{{\"id\":\"{}\",\"url\":\"{}\"}}", flux_id, flux_url);
+    let body = format!("{{\"id\":{},\"url\":\"{}\"}}", flux_id, flux_url);
 
     client.patch(path, Some(headers), Some(body)).await?
-    .json::<HashMap<String, String>>().await
+    .json::<Flux>().await
+}
+
+
+#[cfg(test)]
+mod tests {
+    use httptest::{Server, Expectation, matchers::*, responders::*};
+    use super::*;
+    use super::super::Client;
+
+    fn get_server() -> Server {
+        Server::run()
+    }
+
+    fn get_client(server: Option<&Server>) -> Client {
+        match server {
+            Some(server) => {
+                Client::new(
+                    String::from("localhost"),
+                    server.addr().port() as u64
+                )
+            },
+            None => {
+                Client::new(String::from("uncorrect_domain"), 80)
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn get_all_connection_error() -> Result<(), String> {
+        // Setup Client
+        let client = get_client(None);
+
+        // Run function to test
+        let res = get_all(client).await;
+
+        // Test
+        match res {
+            Ok(_)   => Err(String::from("The function return something")),
+            Err(e)  => Ok(())
+        }
+    }
+
+    #[tokio::test]
+    async fn get_all_empty() -> Result<(), Error> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/flux"))
+            .respond_with(status_code(200).body("[]")),
+        );
+
+        // Run function to test
+        let flux = get_all(client).await?;
+
+        // Test response
+        assert!(flux.len() == 0);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_all_filled_test() -> Result<(), Error> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/flux"))
+            .respond_with(status_code(200).body("[ 
+                { \"id\": 1, \"url\": \"http://toto.org\"},
+                { \"id\": 2, \"url\": \"http://tata.org\"},
+                { \"id\": 3, \"url\": \"http://tutu.org\"},
+                { \"id\": 4, \"url\": \"http://titi.org\"}
+            ]")),
+        );
+
+        // Run function to test
+        let flux = get_all(client).await?;
+
+        // Test response
+        assert!(flux.len() == 4);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn crete_test() -> Result<(), Error> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(
+                all_of![
+                    request::method_path("POST", "/flux"),
+                    // Check the content of the body
+                    request::body(json_decoded(eq(serde_json::json!({"url": "toto"})))),       
+                ]
+            ).respond_with(status_code(200).body(" 
+                { \"id\": 1, \"url\": \"http://toto.org\"}")),
+        );
+
+        // Run function to test
+        let flux = create(client, String::from("toto")).await?;
+
+        // Test response
+        assert!(flux.id == 1);
+        assert!(flux.url == String::from("http://toto.org"));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn delete_test() -> Result<(), Error> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(
+                all_of![
+                    request::method_path("DELETE", "/flux"),
+                    // Check the content of the body
+                    request::body(json_decoded(eq(serde_json::json!({"id": 1})))),       
+                ]
+            ).respond_with(status_code(200).body(" 
+                { \"id\": 1, \"url\": \"http://toto.org\"}")),
+        );
+
+        // Run function to test
+        let flux = delete(client, 1).await?;
+
+        // Test response
+        assert!(flux.id == 1);
+        assert!(flux.url == String::from("http://toto.org"));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn update_test() -> Result<(), Error> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(
+                all_of![
+                    request::method_path("PATCH", "/flux"),
+                    request::body(json_decoded(eq(serde_json::json!({"id": 1, "url": "toto"}))))
+                ]
+            ).respond_with(status_code(200).body(" 
+                { \"id\": 2, \"url\": \"http://toto.org\"}")),
+        );
+
+        // Run function to test
+        let flux = update(client, 1, String::from("toto")).await?;
+
+        // Test response
+        assert!(flux.id == 2);
+        assert!(flux.url == String::from("http://toto.org"));
+
+        Ok(())
+    }
 }

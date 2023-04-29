@@ -1,4 +1,6 @@
 mod cli_parser;
+mod network;
+mod types;
 
 use clap::Parser;
 

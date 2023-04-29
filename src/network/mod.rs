@@ -11,35 +11,35 @@ pub struct Client {
 }
 
 impl Client {
-    fn new(address: String, port: u64) -> Client {
+    pub fn new(address: String, port: u64) -> Client {
         Client {
             url: format!("http://{}:{}", address, port),
             http_client: ReqwestClient::new()
         }
     }
     
-    async fn get(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
+    pub async fn get(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
         let request = self.http_client
         .get(format!("{}{}", self.url, path));
 
         send(request, headers, body).await
     }
 
-    async fn post(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
+    pub async fn post(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
         let request = self.http_client
         .post(format!("{}{}", self.url, path));
 
         send(request, headers, body).await
     }
 
-    async fn patch(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
+    pub async fn patch(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
         let request = self.http_client
         .patch(format!("{}{}", self.url, path));
 
         send(request, headers, body).await
     }
 
-    async fn delete(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
+    pub async fn delete(&self, path: &str, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {
         let request = self.http_client
         .delete(format!("{}{}", self.url, path));
 

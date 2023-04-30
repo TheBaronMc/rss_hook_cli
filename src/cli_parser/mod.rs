@@ -1,8 +1,8 @@
-mod flux;
-mod webhooks;
-mod hooks;
-mod articles;
-mod deliveries;
+pub mod flux;
+pub mod webhooks;
+pub mod hooks;
+pub mod articles;
+pub mod deliveries;
 
 use clap::{Parser, Subcommand};
 
@@ -12,15 +12,15 @@ use clap::{Parser, Subcommand};
 #[command(version = "1.0")]
 pub struct CliParser {
     #[command(subcommand)]
-    commands: Commands,
+    pub commands: Commands,
     #[arg(short, long, default_value = "localhost")]
-    server: Option<String>,
+    pub server: Option<String>,
     #[arg(short, long, default_value = "3000")]
-    port: Option<i64>
+    pub port: Option<i64>
 }
 
 #[derive(Subcommand)]
-enum Commands {
+pub enum Commands {
     /// Actions related to RSS Flux (add, del, update)
     Flux {
         #[command(subcommand)]

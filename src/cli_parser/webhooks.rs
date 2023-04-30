@@ -14,5 +14,7 @@ pub enum Commands {
     Update {
         webhook_id: u64,
         webhook_url: String
-    }
+    },
+    /// List all webhooks
+    List { }
 }

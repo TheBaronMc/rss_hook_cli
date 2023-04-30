@@ -2,6 +2,7 @@ mod flux;
 mod webhook;
 mod article;
 mod hooks;
+mod deliveries;
 
 use reqwest::{Client as ReqwestClient, RequestBuilder};
 use reqwest::header::HeaderMap;

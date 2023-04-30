@@ -1,10 +1,10 @@
 use super::Client;
-use super::super::types::Webhook;
+use super::super::types::{Webhook, Exception};
+use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
-use reqwest::Error;
 
-pub async fn get_all(client: Client) -> Result<Vec<Webhook>, Error> {
+pub async fn get_all(client: Client) -> Result<Vec<Webhook>, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -12,12 +12,12 @@ pub async fn get_all(client: Client) -> Result<Vec<Webhook>, Error> {
 
     let body = String::from("");
 
-    client.get(path, Some(headers), Some(body)).await?
-    .json::<Vec<Webhook>>().await
+    let res = client.get(path, Some(headers), Some(body)).await;
+    processResponse::<Vec<Webhook>>(res).await
 }
 
 
-pub async fn create(client: Client, webhook_url: String) -> Result<Webhook, Error> {
+pub async fn create(client: Client, webhook_url: String) -> Result<Webhook, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -25,11 +25,11 @@ pub async fn create(client: Client, webhook_url: String) -> Result<Webhook, Erro
 
     let body = format!("{{\"url\":\"{}\"}}", webhook_url);
 
-    client.post(path, Some(headers), Some(body)).await?
-    .json::<Webhook>().await
+    let res = client.post(path, Some(headers), Some(body)).await;
+    processResponse::<Webhook>(res).await
 }
 
-pub async fn delete(client: Client, webhook_id: i64) -> Result<Webhook, Error> {
+pub async fn delete(client: Client, webhook_id: i64) -> Result<Webhook, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -37,11 +37,11 @@ pub async fn delete(client: Client, webhook_id: i64) -> Result<Webhook, Error> {
 
     let body = format!("{{\"id\":{}}}", webhook_id);
 
-    client.delete(path, Some(headers), Some(body)).await?
-    .json::<Webhook>().await
+    let res = client.delete(path, Some(headers), Some(body)).await;
+    processResponse::<Webhook>(res).await
 }
 
-pub async fn update(client: Client, webhook_id: i64, webhook_url: String) -> Result<Webhook, Error> {
+pub async fn update(client: Client, webhook_id: i64, webhook_url: String) -> Result<Webhook, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -49,8 +49,8 @@ pub async fn update(client: Client, webhook_id: i64, webhook_url: String) -> Res
 
     let body = format!("{{\"id\":{},\"url\":\"{}\"}}", webhook_id, webhook_url);
 
-    client.patch(path, Some(headers), Some(body)).await?
-    .json::<Webhook>().await
+    let res = client.patch(path, Some(headers), Some(body)).await;
+    processResponse::<Webhook>(res).await
 }
 
 
@@ -94,7 +94,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_empty() -> Result<(), Error> {
+    async fn get_all_empty() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -115,7 +115,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_filled_test() -> Result<(), Error> {
+    async fn get_all_filled_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -141,7 +141,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn crete_test() -> Result<(), Error> {
+    async fn get_all_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/webhooks"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = get_all(client).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn crete_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -169,7 +201,40 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_test() -> Result<(), Error> {
+    async fn create_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("POST", "/webhooks"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = create(client, String::from("toto")).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+
+    #[tokio::test]
+    async fn delete_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -197,7 +262,40 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_test() -> Result<(), Error> {
+    async fn delete_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("DELETE", "/webhooks"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = delete(client, 1).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+
+    #[tokio::test]
+    async fn update_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -222,4 +320,37 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn update_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("PATCH", "/webhooks"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = update(client, 1, String::from("toto")).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
 }

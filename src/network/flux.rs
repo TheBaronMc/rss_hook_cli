@@ -1,10 +1,10 @@
 use super::Client;
-use super::super::types::Flux;
+use super::super::types::{Flux, Exception};
+use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
-use reqwest::Error;
 
-pub async fn get_all(client: Client) -> Result<Vec<Flux>, Error> {
+pub async fn get_all(client: Client) -> Result<Vec<Flux>, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -12,12 +12,11 @@ pub async fn get_all(client: Client) -> Result<Vec<Flux>, Error> {
 
     let body = String::from("");
 
-    client.get(path, Some(headers), Some(body)).await?
-    .json::<Vec<Flux>>().await
+    let res = client.get(path, Some(headers), Some(body)).await;
+    processResponse::<Vec<Flux>>(res).await
 }
 
-
-pub async fn create(client: Client, flux_url: String) -> Result<Flux, Error> {
+pub async fn create(client: Client, flux_url: String) -> Result<Flux, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -25,11 +24,11 @@ pub async fn create(client: Client, flux_url: String) -> Result<Flux, Error> {
 
     let body = format!("{{\"url\":\"{}\"}}", flux_url);
 
-    client.post(path, Some(headers), Some(body)).await?
-    .json::<Flux>().await
+    let res = client.post(path, Some(headers), Some(body)).await;
+    processResponse::<Flux>(res).await
 }
 
-pub async fn delete(client: Client, flux_id: i64) -> Result<Flux, Error> {
+pub async fn delete(client: Client, flux_id: i64) -> Result<Flux, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -37,11 +36,11 @@ pub async fn delete(client: Client, flux_id: i64) -> Result<Flux, Error> {
 
     let body = format!("{{\"id\":{}}}", flux_id);
 
-    client.delete(path, Some(headers), Some(body)).await?
-    .json::<Flux>().await
+    let res = client.delete(path, Some(headers), Some(body)).await;
+    processResponse::<Flux>(res).await
 }
 
-pub async fn update(client: Client, flux_id: i64, flux_url: String) -> Result<Flux, Error> {
+pub async fn update(client: Client, flux_id: i64, flux_url: String) -> Result<Flux, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -49,8 +48,8 @@ pub async fn update(client: Client, flux_id: i64, flux_url: String) -> Result<Fl
 
     let body = format!("{{\"id\":{},\"url\":\"{}\"}}", flux_id, flux_url);
 
-    client.patch(path, Some(headers), Some(body)).await?
-    .json::<Flux>().await
+    let res = client.patch(path, Some(headers), Some(body)).await;
+    processResponse::<Flux>(res).await
 }
 
 
@@ -94,7 +93,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_empty() -> Result<(), Error> {
+    async fn get_all_empty() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -115,7 +114,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_filled_test() -> Result<(), Error> {
+    async fn get_all_filled_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -141,7 +140,40 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn crete_test() -> Result<(), Error> {
+    async fn get_all_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/flux"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = get_all(client).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+
+    #[tokio::test]
+    async fn crete_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -169,7 +201,40 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_test() -> Result<(), Error> {
+    async fn create_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("POST", "/flux"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = create(client, String::from("")).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+
+    #[tokio::test]
+    async fn delete_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -197,7 +262,40 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_test() -> Result<(), Error> {
+    async fn delete_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("DELETE", "/flux"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = delete(client, 1).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+
+    #[tokio::test]
+    async fn update_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -222,4 +320,37 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn get_all_Exception_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("PATCH", "/flux"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = update(client, 1, String::from("toto")).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
 }

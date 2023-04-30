@@ -27,3 +27,9 @@ pub struct Hook {
     pub sourceId: u64,
     pub destinationId: u64
 }
+
+#[derive(Deserialize,Debug)]
+pub struct Exception {
+    pub statusCode: u64,
+    pub message: String
+}

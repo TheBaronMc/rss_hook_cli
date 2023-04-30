@@ -7,7 +7,6 @@ mod deliveries;
 use reqwest::{Client as ReqwestClient, RequestBuilder};
 use reqwest::header::HeaderMap;
 use reqwest::{Response, Error};
-use std::collections::HashMap;
 
 pub struct Client {
     url: String,
@@ -49,24 +48,6 @@ impl Client {
 
         send(request, headers, body).await
     }
-}
-
-fn args_to_query_string(args: HashMap<String,String>) -> String {
-    let mut path= String::new();
-
-    path += "?";
-    let nb_keys = args.keys().len();
-    let mut index = 0;
-
-    for (key, value) in args {
-        path += format!("{}={}", key, value).as_str();
-        if index < nb_keys-1 {
-            path += "&";
-        }
-        index += 1;
-    }
-
-    path
 }
 
 async fn send(mut request: RequestBuilder, headers: Option<HeaderMap>, body: Option<String>) -> Result<Response, Error> {

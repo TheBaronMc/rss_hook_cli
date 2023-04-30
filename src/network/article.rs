@@ -1,10 +1,10 @@
 use super::Client;
-use super::super::types::Article;
+use super::super::types::{Article, Exception};
+use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
-use reqwest::Error;
 
-pub async fn get_all(client: Client) -> Result<Vec<Article>, Error> {
+pub async fn get_all(client: Client) -> Result<Vec<Article>, Exception> {
     let path = "/articles";
 
     let mut headers = HeaderMap::new();
@@ -12,11 +12,11 @@ pub async fn get_all(client: Client) -> Result<Vec<Article>, Error> {
 
     let body = String::from("");
 
-    client.get(path, Some(headers), Some(body)).await?
-    .json::<Vec<Article>>().await
+    let response = client.get(path, Some(headers), Some(body)).await;
+    processResponse::<Vec<Article>>(response).await
 }
 
-pub async fn get_all_from(client: Client, flux_id: u64) -> Result<Vec<Article>, Error> {
+pub async fn get_all_from(client: Client, flux_id: u64) -> Result<Vec<Article>, Exception> {
     let path = format!("/articles/flux?id={}", flux_id);
 
     let mut headers = HeaderMap::new();
@@ -24,8 +24,8 @@ pub async fn get_all_from(client: Client, flux_id: u64) -> Result<Vec<Article>, 
 
     let body = String::from("");
 
-    client.get(path.as_str(), Some(headers), Some(body)).await?
-    .json::<Vec<Article>>().await
+    let response = client.get(path.as_str(), Some(headers), Some(body)).await;
+    processResponse::<Vec<Article>>(response).await
 }
 
 
@@ -70,7 +70,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_empty() -> Result<(), Error> {
+    async fn get_all_empty() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -91,7 +91,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_filled_test() -> Result<(), Error> {
+    async fn get_all_filled_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -128,7 +128,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_from_empty() -> Result<(), Error> {
+    async fn get_all_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/articles"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = get_all(client).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn get_all_from_empty() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -154,7 +186,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_from_filled_test() -> Result<(), Error> {
+    async fn get_all_from_filled_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -193,5 +225,37 @@ mod tests {
         assert!(articles.len() == 2);
 
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_all_from_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/articles/flux"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = get_all_from(client, 1).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
     }
 }

@@ -1,10 +1,10 @@
 use super::Client;
-use super::super::types::{Flux,Webhook,Hook};
+use super::super::types::{Flux,Webhook,Hook,Exception};
+use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
-use reqwest::Error;
 
-pub async fn get_all_bind_to_flux(client: Client, flux_id: u64) -> Result<Vec<Webhook>, Error> {
+pub async fn get_all_bind_to_flux(client: Client, flux_id: u64) -> Result<Vec<Webhook>, Exception> {
     let path = format!("/hooks/flux?id={}", flux_id);
 
     let mut headers = HeaderMap::new();
@@ -12,11 +12,11 @@ pub async fn get_all_bind_to_flux(client: Client, flux_id: u64) -> Result<Vec<We
 
     let body = String::from("");
 
-    client.get(path.as_str(), Some(headers), Some(body)).await?
-    .json::<Vec<Webhook>>().await
+    let res = client.get(path.as_str(), Some(headers), Some(body)).await;
+    processResponse(res).await
 }
 
-pub async fn get_all_bind_to_webhook(client: Client, webhook_id: u64) -> Result<Vec<Flux>, Error> {
+pub async fn get_all_bind_to_webhook(client: Client, webhook_id: u64) -> Result<Vec<Flux>, Exception> {
     let path = format!("/hooks/webhook?id={}", webhook_id);
 
     let mut headers = HeaderMap::new();
@@ -24,11 +24,11 @@ pub async fn get_all_bind_to_webhook(client: Client, webhook_id: u64) -> Result<
 
     let body = String::from("");
 
-    client.get(path.as_str(), Some(headers), Some(body)).await?
-    .json::<Vec<Flux>>().await
+    let res = client.get(path.as_str(), Some(headers), Some(body)).await;
+    processResponse(res).await
 }
 
-pub async fn create(client: Client, hook: Hook) -> Result<bool, Error> {
+pub async fn create(client: Client, hook: Hook) -> Result<bool, Exception> {
     let path = "/hooks";
 
     let mut headers = HeaderMap::new();
@@ -36,11 +36,11 @@ pub async fn create(client: Client, hook: Hook) -> Result<bool, Error> {
 
     let body = format!("{{\"flux_id\": {}, \"webhook_id\": {} }}", hook.sourceId, hook.destinationId);
 
-    client.post(path, Some(headers), Some(body)).await?
-    .json::<bool>().await
+    let res = client.post(path, Some(headers), Some(body)).await;
+    processResponse::<bool>(res).await
 }
 
-pub async fn delete(client: Client, hook: Hook) -> Result<bool, Error> {
+pub async fn delete(client: Client, hook: Hook) -> Result<bool, Exception> {
     let path = "/hooks";
 
     let mut headers = HeaderMap::new();
@@ -48,8 +48,8 @@ pub async fn delete(client: Client, hook: Hook) -> Result<bool, Error> {
 
     let body = format!("{{\"flux_id\": {}, \"webhook_id\": {}}}", hook.sourceId, hook.destinationId);
 
-    client.delete(path, Some(headers), Some(body)).await?
-    .json::<bool>().await
+    let res = client.delete(path, Some(headers), Some(body)).await;
+    processResponse::<bool>(res).await
 }
 
 #[cfg(test)]
@@ -77,7 +77,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_bind_to_flux_empty() -> Result<(), Error> {
+    async fn get_all_bind_to_flux_empty() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -103,7 +103,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_bind_to_flux_test() -> Result<(), Error> {
+    async fn get_all_bind_to_flux_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -134,7 +134,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_bind_to_webhook_empty() -> Result<(), Error> {
+    async fn get_all_bind_to_flux_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/hooks/flux"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = get_all_bind_to_flux(client, 1).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn get_all_bind_to_webhook_empty() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -160,7 +192,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_bind_to_webhook_test() -> Result<(), Error> {
+    async fn get_all_bind_to_webhook_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -191,7 +223,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_success_test() -> Result<(), Error> {
+    async fn get_all_bind_to_webhook_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/hooks/webhook"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = get_all_bind_to_webhook(client, 1).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn create_success_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -219,7 +283,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_fail_test() -> Result<(), Error> {
+    async fn create_fail_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -247,7 +311,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_success_test() -> Result<(), Error> {
+    async fn create_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("POST", "/hooks"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = create(client, Hook { sourceId: 1, destinationId: 1 }).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn delete_success_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -275,7 +371,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_fail_test() -> Result<(), Error> {
+    async fn delete_fail_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));
@@ -301,5 +397,38 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn delete_error_test() -> Result<(), Exception> {
+        // Setup Client and Server
+        let server = get_server();
+        let client = get_client(Some(&server));
+
+        // Setup available path
+        server.expect(
+            Expectation::matching(request::method_path("DELETE", "/hooks"))
+            .respond_with(status_code(200).body("
+                { 
+                    \"statusCode\": 1,
+                    \"message\": \"toto\"
+                }")),
+        );
+
+        // Run function to test
+        let res = delete(client, Hook { sourceId: 1, destinationId: 1 }).await;
+
+        // Test response
+        match res {
+            Ok(_) => Err(Exception { statusCode: 1, message: String::from("No exception") }),
+            Err(e) => {
+                if e.message == String::from("toto") && e.statusCode == 1 {
+                    Ok(())
+                } else {
+                    Err(Exception { statusCode: 1, message: String::from("Wrong values") })
+                }
+            }
+        }
+    }
+
 
 }

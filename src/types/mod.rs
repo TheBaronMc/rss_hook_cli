@@ -21,3 +21,9 @@ pub struct Article {
     pub url: Option<String>,
     pub sourceId: u64
 }
+
+#[derive(Deserialize)]
+pub struct Hook {
+    pub sourceId: u64,
+    pub destinationId: u64
+}

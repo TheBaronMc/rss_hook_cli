@@ -1,6 +1,7 @@
 mod flux;
 mod webhook;
 mod article;
+mod hooks;
 
 use reqwest::{Client as ReqwestClient, RequestBuilder};
 use reqwest::header::HeaderMap;

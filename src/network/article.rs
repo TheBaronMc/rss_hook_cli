@@ -17,7 +17,7 @@ pub async fn get_all(client: Client) -> Result<Vec<Article>, Error> {
 }
 
 pub async fn get_all_from(client: Client, flux_id: u64) -> Result<Vec<Article>, Error> {
-    let path = format!("/articles?id={}", flux_id);
+    let path = format!("/articles/flux?id={}", flux_id);
 
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -137,7 +137,7 @@ mod tests {
         server.expect(
             Expectation::matching(
                 all_of![
-                    request::method_path("GET", "/articles"),
+                    request::method_path("GET", "/articles/flux"),
                     request::query(url_decoded(contains(("id", "1")))),
                 ]
             )
@@ -163,7 +163,7 @@ mod tests {
         server.expect(
             Expectation::matching(
                 all_of![
-                    request::method_path("GET", "/articles"),
+                    request::method_path("GET", "/articles/flux"),
                     request::query(url_decoded(contains(("id", "1")))),
                 ]
             )

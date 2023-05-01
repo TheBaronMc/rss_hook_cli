@@ -6,6 +6,6 @@ pub enum Commands {
     Ls {
         // Filter on flux id
         #[arg(short, long)]
-        flux_id: Option<String>
+        flux_id: Option<u64>
     },
 }

@@ -4,8 +4,8 @@ use clap::Subcommand;
 pub enum Commands {
     /// Create a link between a RSS Flux and a webhook
     Create {
-        flux_id: String,
-        webhook_id: String
+        flux_id: u64,
+        webhook_id: u64
     },
     /// List all links
     Ls {

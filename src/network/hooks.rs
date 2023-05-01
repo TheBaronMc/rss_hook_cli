@@ -4,7 +4,7 @@ use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
-pub async fn get_all_bind_to_flux(client: Client, flux_id: u64) -> Result<Vec<Webhook>, Exception> {
+pub async fn get_all_bind_to_flux(client: &Client, flux_id: u64) -> Result<Vec<Webhook>, Exception> {
     let path = format!("/hooks/flux?id={}", flux_id);
 
     let mut headers = HeaderMap::new();
@@ -16,7 +16,7 @@ pub async fn get_all_bind_to_flux(client: Client, flux_id: u64) -> Result<Vec<We
     processResponse(res).await
 }
 
-pub async fn get_all_bind_to_webhook(client: Client, webhook_id: u64) -> Result<Vec<Flux>, Exception> {
+pub async fn get_all_bind_to_webhook(client: &Client, webhook_id: u64) -> Result<Vec<Flux>, Exception> {
     let path = format!("/hooks/webhook?id={}", webhook_id);
 
     let mut headers = HeaderMap::new();
@@ -28,7 +28,7 @@ pub async fn get_all_bind_to_webhook(client: Client, webhook_id: u64) -> Result<
     processResponse(res).await
 }
 
-pub async fn create(client: Client, hook: Hook) -> Result<bool, Exception> {
+pub async fn create(client: &Client, hook: Hook) -> Result<bool, Exception> {
     let path = "/hooks";
 
     let mut headers = HeaderMap::new();
@@ -40,7 +40,7 @@ pub async fn create(client: Client, hook: Hook) -> Result<bool, Exception> {
     processResponse::<bool>(res).await
 }
 
-pub async fn delete(client: Client, hook: Hook) -> Result<bool, Exception> {
+pub async fn delete(client: &Client, hook: Hook) -> Result<bool, Exception> {
     let path = "/hooks";
 
     let mut headers = HeaderMap::new();
@@ -94,7 +94,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhooks = get_all_bind_to_flux(client, 1).await?;
+        let webhooks = get_all_bind_to_flux(&client, 1).await?;
 
         // Test response
         assert!(webhooks.len() == 0);
@@ -125,7 +125,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhooks = get_all_bind_to_flux(client, 1).await?;
+        let webhooks = get_all_bind_to_flux(&client, 1).await?;
 
         // Test response
         assert!(webhooks.len() == 4);
@@ -150,7 +150,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all_bind_to_flux(client, 1).await;
+        let res = get_all_bind_to_flux(&client, 1).await;
 
         // Test response
         match res {
@@ -183,7 +183,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = get_all_bind_to_webhook(client, 1).await?;
+        let flux = get_all_bind_to_webhook(&client, 1).await?;
 
         // Test response
         assert!(flux.len() == 0);
@@ -214,7 +214,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = get_all_bind_to_webhook(client, 1).await?;
+        let flux = get_all_bind_to_webhook(&client, 1).await?;
 
         // Test response
         assert!(flux.len() == 4);
@@ -239,7 +239,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all_bind_to_webhook(client, 1).await;
+        let res = get_all_bind_to_webhook(&client, 1).await;
 
         // Test response
         match res {
@@ -273,7 +273,7 @@ mod tests {
 
         // Run function to test
         let created = create(
-            client,
+            &client,
             Hook { sourceId: 1, destinationId: 2 }).await?;
 
         // Test response
@@ -301,7 +301,7 @@ mod tests {
 
         // Run function to test
         let created = create(
-            client,
+            &client,
             Hook { sourceId: 1, destinationId: 2 }).await?;
 
         // Test response
@@ -327,7 +327,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = create(client, Hook { sourceId: 1, destinationId: 1 }).await;
+        let res = create(&client, Hook { sourceId: 1, destinationId: 1 }).await;
 
         // Test response
         match res {
@@ -361,7 +361,7 @@ mod tests {
 
         // Run function to test
         let created = delete(
-            client,
+            &client,
             Hook { sourceId: 1, destinationId: 2 }).await?;
 
         // Test response
@@ -389,7 +389,7 @@ mod tests {
 
         // Run function to test
         let created = delete(
-            client,
+            &client,
             Hook { sourceId: 1, destinationId: 2 }).await?;
 
         // Test response
@@ -415,7 +415,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = delete(client, Hook { sourceId: 1, destinationId: 1 }).await;
+        let res = delete(&client, Hook { sourceId: 1, destinationId: 1 }).await;
 
         // Test response
         match res {

@@ -4,7 +4,7 @@ use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
-pub async fn get_all_receiver(client: Client, article_id: u64) -> Result<Vec<Webhook>, Exception> {
+pub async fn get_all_receiver(client: &Client, article_id: u64) -> Result<Vec<Webhook>, Exception> {
     let path = format!("/deliveries/articles?id={}", article_id);
 
     let mut headers = HeaderMap::new();
@@ -14,7 +14,7 @@ pub async fn get_all_receiver(client: Client, article_id: u64) -> Result<Vec<Web
     processResponse(res).await
 }
 
-pub async fn get_all_received(client: Client, webhook_id: u64) -> Result<Vec<Article>, Exception> {
+pub async fn get_all_received(client: &Client, webhook_id: u64) -> Result<Vec<Article>, Exception> {
     let path = format!("/deliveries/webhooks?id={}", webhook_id);
 
     let mut headers = HeaderMap::new();
@@ -69,7 +69,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhooks = get_all_receiver(client, 1).await?;
+        let webhooks = get_all_receiver(&client, 1).await?;
 
         // Test response
         assert!(webhooks.len() == 0);
@@ -100,7 +100,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhooks = get_all_receiver(client, 1).await?;
+        let webhooks = get_all_receiver(&client, 1).await?;
 
         // Test response
         assert!(webhooks.len() == 4);
@@ -125,7 +125,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all_receiver(client, 1).await;
+        let res = get_all_receiver(&client, 1).await;
 
         // Test response
         match res {
@@ -158,7 +158,7 @@ mod tests {
         );
 
         // Run function to test
-        let articles = get_all_received(client, 1).await?;
+        let articles = get_all_received(&client, 1).await?;
 
         // Test response
         assert!(articles.len() == 0);
@@ -200,7 +200,7 @@ mod tests {
         );
 
         // Run function to test
-        let articles = get_all_received(client, 1).await?;
+        let articles = get_all_received(&client, 1).await?;
 
         // Test response
         assert!(articles.len() == 2);
@@ -225,7 +225,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all_received(client, 1).await;
+        let res = get_all_received(&client, 1).await;
 
         // Test response
         match res {

@@ -4,7 +4,7 @@ use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
-pub async fn get_all(client: Client) -> Result<Vec<Webhook>, Exception> {
+pub async fn get_all(client: &Client) -> Result<Vec<Webhook>, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -17,7 +17,7 @@ pub async fn get_all(client: Client) -> Result<Vec<Webhook>, Exception> {
 }
 
 
-pub async fn create(client: Client, webhook_url: String) -> Result<Webhook, Exception> {
+pub async fn create(client: &Client, webhook_url: String) -> Result<Webhook, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -29,7 +29,7 @@ pub async fn create(client: Client, webhook_url: String) -> Result<Webhook, Exce
     processResponse::<Webhook>(res).await
 }
 
-pub async fn delete(client: Client, webhook_id: i64) -> Result<Webhook, Exception> {
+pub async fn delete(client: &Client, webhook_id: i64) -> Result<Webhook, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -41,7 +41,7 @@ pub async fn delete(client: Client, webhook_id: i64) -> Result<Webhook, Exceptio
     processResponse::<Webhook>(res).await
 }
 
-pub async fn update(client: Client, webhook_id: i64, webhook_url: String) -> Result<Webhook, Exception> {
+pub async fn update(client: &Client, webhook_id: i64, webhook_url: String) -> Result<Webhook, Exception> {
     let path = "/webhooks";
 
     let mut headers = HeaderMap::new();
@@ -84,7 +84,7 @@ mod tests {
         let client = get_client(None);
 
         // Run function to test
-        let res = get_all(client).await;
+        let res = get_all(&client).await;
 
         // Test
         match res {
@@ -106,7 +106,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhooks = get_all(client).await?;
+        let webhooks = get_all(&client).await?;
 
         // Test response
         assert!(webhooks.len() == 0);
@@ -132,7 +132,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhooks = get_all(client).await?;
+        let webhooks = get_all(&client).await?;
 
         // Test response
         assert!(webhooks.len() == 4);
@@ -157,7 +157,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all(client).await;
+        let res = get_all(&client).await;
 
         // Test response
         match res {
@@ -191,7 +191,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhook = create(client, String::from("toto")).await?;
+        let webhook = create(&client, String::from("toto")).await?;
 
         // Test response
         assert!(webhook.id == 1);
@@ -217,7 +217,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = create(client, String::from("toto")).await;
+        let res = create(&client, String::from("toto")).await;
 
         // Test response
         match res {
@@ -252,7 +252,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhook = delete(client, 1).await?;
+        let webhook = delete(&client, 1).await?;
 
         // Test response
         assert!(webhook.id == 1);
@@ -278,7 +278,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = delete(client, 1).await;
+        let res = delete(&client, 1).await;
 
         // Test response
         match res {
@@ -312,7 +312,7 @@ mod tests {
         );
 
         // Run function to test
-        let webhook = update(client, 1, String::from("toto")).await?;
+        let webhook = update(&client, 1, String::from("toto")).await?;
 
         // Test response
         assert!(webhook.id == 2);
@@ -338,7 +338,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = update(client, 1, String::from("toto")).await;
+        let res = update(&client, 1, String::from("toto")).await;
 
         // Test response
         match res {

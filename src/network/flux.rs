@@ -4,7 +4,7 @@ use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
-pub async fn get_all(client: Client) -> Result<Vec<Flux>, Exception> {
+pub async fn get_all(client: &Client) -> Result<Vec<Flux>, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -16,7 +16,7 @@ pub async fn get_all(client: Client) -> Result<Vec<Flux>, Exception> {
     processResponse::<Vec<Flux>>(res).await
 }
 
-pub async fn create(client: Client, flux_url: String) -> Result<Flux, Exception> {
+pub async fn create(client: &Client, flux_url: String) -> Result<Flux, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -28,7 +28,7 @@ pub async fn create(client: Client, flux_url: String) -> Result<Flux, Exception>
     processResponse::<Flux>(res).await
 }
 
-pub async fn delete(client: Client, flux_id: i64) -> Result<Flux, Exception> {
+pub async fn delete(client: &Client, flux_id: i64) -> Result<Flux, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -40,7 +40,7 @@ pub async fn delete(client: Client, flux_id: i64) -> Result<Flux, Exception> {
     processResponse::<Flux>(res).await
 }
 
-pub async fn update(client: Client, flux_id: i64, flux_url: String) -> Result<Flux, Exception> {
+pub async fn update(client: &Client, flux_id: i64, flux_url: String) -> Result<Flux, Exception> {
     let path = "/flux";
 
     let mut headers = HeaderMap::new();
@@ -83,7 +83,7 @@ mod tests {
         let client = get_client(None);
 
         // Run function to test
-        let res = get_all(client).await;
+        let res = get_all(&client).await;
 
         // Test
         match res {
@@ -105,7 +105,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = get_all(client).await?;
+        let flux = get_all(&client).await?;
 
         // Test response
         assert!(flux.len() == 0);
@@ -131,7 +131,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = get_all(client).await?;
+        let flux = get_all(&client).await?;
 
         // Test response
         assert!(flux.len() == 4);
@@ -156,7 +156,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all(client).await;
+        let res = get_all(&client).await;
 
         // Test response
         match res {
@@ -191,7 +191,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = create(client, String::from("toto")).await?;
+        let flux = create(&client, String::from("toto")).await?;
 
         // Test response
         assert!(flux.id == 1);
@@ -217,7 +217,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = create(client, String::from("")).await;
+        let res = create(&client, String::from("")).await;
 
         // Test response
         match res {
@@ -252,7 +252,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = delete(client, 1).await?;
+        let flux = delete(&client, 1).await?;
 
         // Test response
         assert!(flux.id == 1);
@@ -278,7 +278,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = delete(client, 1).await;
+        let res = delete(&client, 1).await;
 
         // Test response
         match res {
@@ -312,7 +312,7 @@ mod tests {
         );
 
         // Run function to test
-        let flux = update(client, 1, String::from("toto")).await?;
+        let flux = update(&client, 1, String::from("toto")).await?;
 
         // Test response
         assert!(flux.id == 2);
@@ -338,7 +338,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = update(client, 1, String::from("toto")).await;
+        let res = update(&client, 1, String::from("toto")).await;
 
         // Test response
         match res {

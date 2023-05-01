@@ -4,7 +4,7 @@ use super::super::utils::processResponse;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
-pub async fn get_all(client: Client) -> Result<Vec<Article>, Exception> {
+pub async fn get_all(client: &Client) -> Result<Vec<Article>, Exception> {
     let path = "/articles";
 
     let mut headers = HeaderMap::new();
@@ -16,7 +16,7 @@ pub async fn get_all(client: Client) -> Result<Vec<Article>, Exception> {
     processResponse::<Vec<Article>>(response).await
 }
 
-pub async fn get_all_from(client: Client, flux_id: u64) -> Result<Vec<Article>, Exception> {
+pub async fn get_all_from(client: &Client, flux_id: u64) -> Result<Vec<Article>, Exception> {
     let path = format!("/articles/flux?id={}", flux_id);
 
     let mut headers = HeaderMap::new();
@@ -60,7 +60,7 @@ mod tests {
         let client = get_client(None);
 
         // Run function to test
-        let res = get_all(client).await;
+        let res = get_all(&client).await;
 
         // Test
         match res {
@@ -82,7 +82,7 @@ mod tests {
         );
 
         // Run function to test
-        let articles = get_all(client).await?;
+        let articles = get_all(&client).await?;
 
         // Test response
         assert!(articles.len() == 0);
@@ -119,7 +119,7 @@ mod tests {
         );
 
         // Run function to test
-        let articles = get_all(client).await?;
+        let articles = get_all(&client).await?;
 
         // Test response
         assert!(articles.len() == 2);
@@ -144,7 +144,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all(client).await;
+        let res = get_all(&client).await;
 
         // Test response
         match res {
@@ -177,7 +177,7 @@ mod tests {
         );
 
         // Run function to test
-        let articles = get_all_from(client, 1).await?;
+        let articles = get_all_from(&client, 1).await?;
 
         // Test response
         assert!(articles.len() == 0);
@@ -219,7 +219,7 @@ mod tests {
         );
 
         // Run function to test
-        let articles = get_all_from(client, 1).await?;
+        let articles = get_all_from(&client, 1).await?;
 
         // Test response
         assert!(articles.len() == 2);
@@ -244,7 +244,7 @@ mod tests {
         );
 
         // Run function to test
-        let res = get_all_from(client, 1).await;
+        let res = get_all_from(&client, 1).await;
 
         // Test response
         match res {

@@ -87,7 +87,7 @@ async fn main() -> Result<(), types::Exception>{
                         return Err(e);
                     }
                 },
-                cli_parser::webhooks::Commands::List {  } => {
+                cli_parser::webhooks::Commands::Ls {  } => {
                     let res = network::webhook::get_all(&client).await;
 
                     match res {

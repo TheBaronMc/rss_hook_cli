@@ -7,9 +7,17 @@ pub mod deliveries;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "RSS Hook CLI")]
-#[command(author = "Charly G.")]
-#[command(version = "1.0")]
+#[clap(name = "Rs Hook CLI", version = "1.0", author = "Charly G.",
+       before_help = r"
+//$$$$$$$                     /$$   /$$                     /$$        /$$$$$$  /$$ /$$
+| $$__  $$                   | $$  | $$                    | $$       /$$__  $$| $$|__/
+| $$  \ $$  /$$$$$$$ /$$$$$$$| $$  | $$  /$$$$$$   /$$$$$$ | $$   /$$| $$  \__/| $$ /$$
+| $$$$$$$/ /$$_____//$$_____/| $$$$$$$$ /$$__  $$ /$$__  $$| $$  /$$/| $$      | $$| $$
+| $$__  $$|  $$$$$$|  $$$$$$ | $$__  $$| $$  \ $$| $$  \ $$| $$$$$$/ | $$      | $$| $$
+| $$  \ $$ \____  $$\____  $$| $$  | $$| $$  | $$| $$  | $$| $$_  $$ | $$    $$| $$| $$
+| $$  | $$ /$$$$$$$//$$$$$$$/| $$  | $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/| $$| $$
+|__/  |__/|_______/|_______/ |__/  |__/ \______/  \______/ |__/  \__/ \______/ |__/|__/
+")] // Banner from https://patorjk.com/software/taag/#p=display&f=Big%20Money-ne&t=RssHookCli
 pub struct CliParser {
     #[command(subcommand)]
     pub commands: Commands,

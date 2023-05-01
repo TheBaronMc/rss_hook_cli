@@ -12,6 +12,7 @@ pub struct Webhook {
     pub url: String
 }
 
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct Article {
     pub id: u64,
@@ -22,12 +23,14 @@ pub struct Article {
     pub sourceId: u64
 }
 
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct Hook {
     pub sourceId: u64,
     pub destinationId: u64
 }
 
+#[allow(non_snake_case)]
 #[derive(Deserialize,Debug)]
 pub struct Exception {
     pub statusCode: u64,

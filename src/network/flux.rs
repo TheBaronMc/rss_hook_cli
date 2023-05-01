@@ -88,7 +88,7 @@ mod tests {
         // Test
         match res {
             Ok(_)   => Err(String::from("The function return something")),
-            Err(e)  => Ok(())
+            Err(_)  => Ok(())
         }
     }
 
@@ -322,7 +322,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_all_Exception_test() -> Result<(), Exception> {
+    async fn get_all_exception_test() -> Result<(), Exception> {
         // Setup Client and Server
         let server = get_server();
         let client = get_client(Some(&server));

@@ -89,7 +89,7 @@ mod tests {
         // Test
         match res {
             Ok(_)   => Err(String::from("The function return something")),
-            Err(e)  => Ok(())
+            Err(_)  => Ok(())
         }
     }
 

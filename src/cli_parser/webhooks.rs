@@ -19,5 +19,5 @@ pub enum Commands {
         webhook_url: String
     },
     /// List all webhooks
-    List { }
+    Ls { }
 }

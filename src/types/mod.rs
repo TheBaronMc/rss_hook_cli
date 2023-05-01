@@ -17,7 +17,7 @@ pub struct Webhook {
 pub struct Article {
     pub id: u64,
     pub title: String,
-    pub description: String,
+    pub description: Option<String>,
     pub pub_date: String,
     pub url: Option<String>,
     pub sourceId: u64

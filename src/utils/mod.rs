@@ -1,11 +1,8 @@
-use std::borrow::Borrow;
-
 use crate::types::Exception;
-use httptest::http::response;
 use reqwest::{Response, Error};
 use serde::de::DeserializeOwned;
 
-pub async fn parseBody<T: DeserializeOwned>(response: Response) -> Result<T, Exception> {
+pub async fn parse_body<T: DeserializeOwned>(response: Response) -> Result<T, Exception> {
     match response.text().await {
         Ok(body) =>  {
             if let Ok(o) = serde_json::from_str::<T>(body.as_str()) {
@@ -22,9 +19,9 @@ pub async fn parseBody<T: DeserializeOwned>(response: Response) -> Result<T, Exc
     }
 }
 
-pub async fn processResponse<T: DeserializeOwned>(result: Result<Response,Error>) -> Result<T, Exception> {
+pub async fn process_response<T: DeserializeOwned>(result: Result<Response,Error>) -> Result<T, Exception> {
     match result {
-        Ok(response) => parseBody::<T>(response).await,
+        Ok(response) => parse_body::<T>(response).await,
         Err(error) => {
             let mut status_code = 500;
 

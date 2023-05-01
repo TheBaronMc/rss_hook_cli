@@ -1,6 +1,6 @@
 use super::Client;
 use super::super::types::{Article,Webhook,Exception};
-use super::super::utils::processResponse;
+use super::super::utils::process_response;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
@@ -11,7 +11,7 @@ pub async fn get_all_receiver(client: &Client, article_id: u64) -> Result<Vec<We
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
     let res = client.get(path.as_str(), Some(headers), None).await;
-    processResponse(res).await
+    process_response(res).await
 }
 
 pub async fn get_all_received(client: &Client, webhook_id: u64) -> Result<Vec<Article>, Exception> {
@@ -21,7 +21,7 @@ pub async fn get_all_received(client: &Client, webhook_id: u64) -> Result<Vec<Ar
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
     let res = client.get(path.as_str(), Some(headers), None).await;
-    processResponse(res).await
+    process_response(res).await
 }
 
 

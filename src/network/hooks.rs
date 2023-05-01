@@ -1,6 +1,6 @@
 use super::Client;
 use super::super::types::{Flux,Webhook,Hook,Exception};
-use super::super::utils::processResponse;
+use super::super::utils::process_response;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
@@ -13,7 +13,7 @@ pub async fn get_all_bind_to_flux(client: &Client, flux_id: u64) -> Result<Vec<W
     let body = String::from("");
 
     let res = client.get(path.as_str(), Some(headers), Some(body)).await;
-    processResponse(res).await
+    process_response(res).await
 }
 
 pub async fn get_all_bind_to_webhook(client: &Client, webhook_id: u64) -> Result<Vec<Flux>, Exception> {
@@ -25,7 +25,7 @@ pub async fn get_all_bind_to_webhook(client: &Client, webhook_id: u64) -> Result
     let body = String::from("");
 
     let res = client.get(path.as_str(), Some(headers), Some(body)).await;
-    processResponse(res).await
+    process_response(res).await
 }
 
 pub async fn create(client: &Client, hook: Hook) -> Result<bool, Exception> {
@@ -37,7 +37,7 @@ pub async fn create(client: &Client, hook: Hook) -> Result<bool, Exception> {
     let body = format!("{{\"flux_id\": {}, \"webhook_id\": {} }}", hook.sourceId, hook.destinationId);
 
     let res = client.post(path, Some(headers), Some(body)).await;
-    processResponse::<bool>(res).await
+    process_response::<bool>(res).await
 }
 
 pub async fn delete(client: &Client, hook: Hook) -> Result<bool, Exception> {
@@ -49,7 +49,7 @@ pub async fn delete(client: &Client, hook: Hook) -> Result<bool, Exception> {
     let body = format!("{{\"flux_id\": {}, \"webhook_id\": {}}}", hook.sourceId, hook.destinationId);
 
     let res = client.delete(path, Some(headers), Some(body)).await;
-    processResponse::<bool>(res).await
+    process_response::<bool>(res).await
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 use super::Client;
 use super::super::types::{Webhook, Exception};
-use super::super::utils::processResponse;
+use super::super::utils::process_response;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
@@ -13,7 +13,7 @@ pub async fn get_all(client: &Client) -> Result<Vec<Webhook>, Exception> {
     let body = String::from("");
 
     let res = client.get(path, Some(headers), Some(body)).await;
-    processResponse::<Vec<Webhook>>(res).await
+    process_response::<Vec<Webhook>>(res).await
 }
 
 
@@ -26,7 +26,7 @@ pub async fn create(client: &Client, webhook_url: String) -> Result<Webhook, Exc
     let body = format!("{{\"url\":\"{}\"}}", webhook_url);
 
     let res = client.post(path, Some(headers), Some(body)).await;
-    processResponse::<Webhook>(res).await
+    process_response::<Webhook>(res).await
 }
 
 pub async fn delete(client: &Client, webhook_id: i64) -> Result<Webhook, Exception> {
@@ -38,7 +38,7 @@ pub async fn delete(client: &Client, webhook_id: i64) -> Result<Webhook, Excepti
     let body = format!("{{\"id\":{}}}", webhook_id);
 
     let res = client.delete(path, Some(headers), Some(body)).await;
-    processResponse::<Webhook>(res).await
+    process_response::<Webhook>(res).await
 }
 
 pub async fn update(client: &Client, webhook_id: i64, webhook_url: String) -> Result<Webhook, Exception> {
@@ -50,7 +50,7 @@ pub async fn update(client: &Client, webhook_id: i64, webhook_url: String) -> Re
     let body = format!("{{\"id\":{},\"url\":\"{}\"}}", webhook_id, webhook_url);
 
     let res = client.patch(path, Some(headers), Some(body)).await;
-    processResponse::<Webhook>(res).await
+    process_response::<Webhook>(res).await
 }
 
 

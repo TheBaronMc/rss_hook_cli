@@ -1,6 +1,6 @@
 use super::Client;
 use super::super::types::{Flux, Exception};
-use super::super::utils::processResponse;
+use super::super::utils::process_response;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
@@ -13,7 +13,7 @@ pub async fn get_all(client: &Client) -> Result<Vec<Flux>, Exception> {
     let body = String::from("");
 
     let res = client.get(path, Some(headers), Some(body)).await;
-    processResponse::<Vec<Flux>>(res).await
+    process_response::<Vec<Flux>>(res).await
 }
 
 pub async fn create(client: &Client, flux_url: String) -> Result<Flux, Exception> {
@@ -25,7 +25,7 @@ pub async fn create(client: &Client, flux_url: String) -> Result<Flux, Exception
     let body = format!("{{\"url\":\"{}\"}}", flux_url);
 
     let res = client.post(path, Some(headers), Some(body)).await;
-    processResponse::<Flux>(res).await
+    process_response::<Flux>(res).await
 }
 
 pub async fn delete(client: &Client, flux_id: i64) -> Result<Flux, Exception> {
@@ -37,7 +37,7 @@ pub async fn delete(client: &Client, flux_id: i64) -> Result<Flux, Exception> {
     let body = format!("{{\"id\":{}}}", flux_id);
 
     let res = client.delete(path, Some(headers), Some(body)).await;
-    processResponse::<Flux>(res).await
+    process_response::<Flux>(res).await
 }
 
 pub async fn update(client: &Client, flux_id: i64, flux_url: String) -> Result<Flux, Exception> {
@@ -49,7 +49,7 @@ pub async fn update(client: &Client, flux_id: i64, flux_url: String) -> Result<F
     let body = format!("{{\"id\":{},\"url\":\"{}\"}}", flux_id, flux_url);
 
     let res = client.patch(path, Some(headers), Some(body)).await;
-    processResponse::<Flux>(res).await
+    process_response::<Flux>(res).await
 }
 
 

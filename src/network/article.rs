@@ -1,6 +1,6 @@
 use super::Client;
 use super::super::types::{Article, Exception};
-use super::super::utils::processResponse;
+use super::super::utils::process_response;
 
 use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
 
@@ -13,7 +13,7 @@ pub async fn get_all(client: &Client) -> Result<Vec<Article>, Exception> {
     let body = String::from("");
 
     let response = client.get(path, Some(headers), Some(body)).await;
-    processResponse::<Vec<Article>>(response).await
+    process_response::<Vec<Article>>(response).await
 }
 
 pub async fn get_all_from(client: &Client, flux_id: u64) -> Result<Vec<Article>, Exception> {
@@ -25,7 +25,7 @@ pub async fn get_all_from(client: &Client, flux_id: u64) -> Result<Vec<Article>,
     let body = String::from("");
 
     let response = client.get(path.as_str(), Some(headers), Some(body)).await;
-    processResponse::<Vec<Article>>(response).await
+    process_response::<Vec<Article>>(response).await
 }
 
 

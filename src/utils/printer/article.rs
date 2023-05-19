@@ -34,11 +34,19 @@ impl<'a> ArticleFormatter<'a> {
             if source_id_digits > formatter.max_source_id_length {
                 formatter.max_source_id_length = source_id_digits;
             }
-            if url_len > formatter.current_max_url_length && url_len <= pref.max_str_len {
-                formatter.current_max_url_length = url_len;
+            if url_len > formatter.current_max_url_length {
+                if url_len <= pref.max_str_len {
+                    formatter.current_max_url_length = url_len;
+                } else {
+                    formatter.current_max_title_length = pref.max_str_len;
+                }
             }
-            if title_len > formatter.current_max_title_length && url_len <= pref.max_str_len {
-                formatter.current_max_title_length = title_len;
+            if title_len > formatter.current_max_title_length {
+                if url_len <= pref.max_str_len {
+                    formatter.current_max_title_length = title_len;
+                } else {
+                    formatter.current_max_title_length = pref.max_str_len;
+                }
             }
         }
 
@@ -64,14 +72,27 @@ impl Formatter<Vec<Article>> for ArticleFormatter<'_> {
     }
 
     fn show_content(&self) {
-        let no_url = String::from("-");
-
         for article in self.articles.iter() {
+            let url = if let Some(url) = &article.url {
+                if url.len() > self.formatter_pref.max_str_len as usize {
+                    String::from(&url[..47]) + "..."
+                } else {
+                    url.clone()
+                }
+            } else {
+                String::from("-")
+            };
+            let title = if article.title.len() > self.formatter_pref.max_str_len as usize {
+                String::from(&article.title[..47]) + "..."
+            } else {
+                article.title.clone()
+            };
+
             println!("{} {: <width_id$}{} {: <width_title$}{} {: <width_url$}{} {:width_source$}{}", 
                 self.formatter_pref.column_sep, 
                 article.id,  self.formatter_pref.column_sep,
-                article.title,  self.formatter_pref.column_sep,
-                if let Some(url) = &article.url { url } else { &no_url },  self.formatter_pref.column_sep,
+                title,  self.formatter_pref.column_sep,
+                url,  self.formatter_pref.column_sep,
                 article.sourceId,  self.formatter_pref.column_sep,
                 width_id = self.max_article_id_length as usize,
                 width_title = self.current_max_title_length as usize,

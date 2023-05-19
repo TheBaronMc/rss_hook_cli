@@ -2,7 +2,6 @@ pub mod flux;
 pub mod webhooks;
 pub mod hooks;
 pub mod articles;
-pub mod deliveries;
 
 use clap::{Parser, Subcommand};
 

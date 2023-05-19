@@ -26,7 +26,10 @@ pub struct CliParser {
     #[arg(short, long, default_value = "localhost")]
     pub server: Option<String>,
     #[arg(short, long, default_value = "3000")]
-    pub port: Option<i64>
+    pub port: Option<i64>,
+    /// No output in terminal
+    #[arg(short, long)]
+    pub no_output: bool
 }
 
 #[derive(Subcommand)]

@@ -16,6 +16,8 @@ use utils::printer::flux::FluxFormatter;
 async fn main() -> Result<(), types::Exception>{
     let args = CliParser::parse();
 
+    let output = !args.no_output;
+
     // Server connection
     let mut server = String::from("localhost");
     let mut port = 3000;
@@ -44,7 +46,7 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::flux::create(&client, flux_url).await;
 
                     match res {
-                        Ok(flux) => println!("{}", flux.id),
+                        Ok(flux) => if output { println!("{}", flux.id) },
                         Err(e) => return Err(e)
                     }
                 },
@@ -67,7 +69,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match res {
                         Ok(flux) => {
-                            print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                            if output {
+                                print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }
@@ -77,7 +81,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(webhooks) => {
-                            print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                            if output {
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }
@@ -90,7 +96,7 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::webhook::create(&client, webhook_url).await;
 
                     match res {
-                        Ok(webhook) => println!("{}", webhook.id),
+                        Ok(webhook) => if output { println!("{}", webhook.id) },
                         Err(e) => return Err(e)
                     }
                 },
@@ -113,7 +119,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match res {
                         Ok(webhooks) => {
-                            print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                            if output {
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }
@@ -123,7 +131,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(articles) => {
-                            print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
+                            if output {
+                                print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }
@@ -133,7 +143,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(flux) => {
-                            print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                            if output {
+                                print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }
@@ -152,7 +164,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(articles) => {
-                            print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
+                            if output {
+                                print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }
@@ -162,7 +176,9 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(webhooks) => {
-                            print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                            if output {
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                            }
                         },
                         Err(e) => return Err(e)
                     }

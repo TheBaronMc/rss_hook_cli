@@ -1,3 +1,5 @@
+pub mod printer;
+
 use crate::types::Exception;
 use reqwest::{Response, Error};
 use serde::de::DeserializeOwned;
@@ -31,5 +33,13 @@ pub async fn process_response<T: DeserializeOwned>(result: Result<Response,Error
 
             Err(Exception { statusCode: status_code, message: error.to_string() })
         }
+    }
+}
+
+pub fn count_digits(num: u64) -> u64 {
+    if num > 0 {
+        1 + count_digits(num.div_euclid(10))
+    } else {
+        0
     }
 }

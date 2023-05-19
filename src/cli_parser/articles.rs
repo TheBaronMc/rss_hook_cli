@@ -11,4 +11,9 @@ pub enum Commands {
         #[arg(short, long)]
         flux_id: Option<u64>
     },
+    // List all webhooks which received the article
+    Deliveries {
+        #[arg(short, long)]
+        article_id: u64
+    }
 }

@@ -2,7 +2,6 @@ pub mod flux;
 pub mod webhooks;
 pub mod hooks;
 pub mod articles;
-pub mod deliveries;
 
 use clap::{Parser, Subcommand};
 
@@ -51,10 +50,5 @@ pub enum Commands {
     Hooks {
         #[command(subcommand)]
         commands: hooks::Commands
-    },
-    /// Actions related deliveries (ls)
-    Deliveries {
-        #[command(subcommand)]
-        commands: deliveries::Commands
     }
 }

@@ -7,10 +7,16 @@ use clap::Parser;
 
 use cli_parser::CliParser;
 
+use utils::printer::*;
+use utils::printer::article::ArticleFormatter;
+use utils::printer::webhook::WebhookFormatter;
+use utils::printer::flux::FluxFormatter;
+
 #[tokio::main]
 async fn main() -> Result<(), types::Exception>{
     let args = CliParser::parse();
 
+    // Server connection
     let mut server = String::from("localhost");
     let mut port = 3000;
 
@@ -24,6 +30,13 @@ async fn main() -> Result<(), types::Exception>{
 
     let client = network::Client::new(server, port as u64);
 
+    // Formatter
+    let formatter_pref = FormatterPref {
+        max_str_len: 50,
+        column_sep: "|",
+        section_sep: "=",
+    };
+
     match args.commands {
         cli_parser::Commands::Flux { commands } => {
             match commands {
@@ -31,7 +44,7 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::flux::create(&client, flux_url).await;
 
                     match res {
-                        Ok(flux) => println!("Created with id {}", flux.id),
+                        Ok(flux) => println!("{}", flux.id),
                         Err(e) => return Err(e)
                     }
                 },
@@ -54,9 +67,7 @@ async fn main() -> Result<(), types::Exception>{
 
                     match res {
                         Ok(flux) => {
-                            for i in 0..flux.len() {
-                                println!("{} - id: {}, url: {}", i, flux[i].id, flux[i].url);
-                            }
+                            print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }
@@ -65,10 +76,8 @@ async fn main() -> Result<(), types::Exception>{
                     let response = network::hooks::get_all_bind_to_flux(&client, flux_id).await;
 
                     match response {
-                        Ok(flux) => {
-                            for i in 0..flux.len() {
-                                println!("{} - id: {}, url: {}", i, flux[i].id, flux[i].url);
-                            }
+                        Ok(webhooks) => {
+                            print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }
@@ -81,7 +90,7 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::webhook::create(&client, webhook_url).await;
 
                     match res {
-                        Ok(webhook) => println!("Created with id {}", webhook.id),
+                        Ok(webhook) => println!("{}", webhook.id),
                         Err(e) => return Err(e)
                     }
                 },
@@ -104,9 +113,7 @@ async fn main() -> Result<(), types::Exception>{
 
                     match res {
                         Ok(webhooks) => {
-                            for i in 0..webhooks.len() {
-                                println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                            }
+                            print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }
@@ -116,13 +123,7 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(articles) => {
-                            for i in 0..articles.len() {
-                                println!("{} - id: {}, url: {}, source: {}", 
-                                i, 
-                                articles[i].id, 
-                                if let Some(url) = articles[i].url.clone() { url } else { "".to_string()},
-                                articles[i].sourceId);
-                            }
+                            print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }
@@ -131,10 +132,8 @@ async fn main() -> Result<(), types::Exception>{
                     let response = network::hooks::get_all_bind_to_webhook(&client, webhook_id).await;
 
                     match response {
-                        Ok(webhooks) => {
-                            for i in 0..webhooks.len() {
-                                println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                            }
+                        Ok(flux) => {
+                            print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }
@@ -153,13 +152,7 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(articles) => {
-                            for i in 0..articles.len() {
-                                println!("{} - id: {}, url: {}, source: {}", 
-                                i, 
-                                articles[i].id, 
-                                if let Some(url) = articles[i].url.clone() { url } else { "".to_string()},
-                                articles[i].sourceId);
-                            }
+                            print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }
@@ -169,9 +162,7 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(webhooks) => {
-                            for i in 0..webhooks.len() {
-                                println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                            }
+                            print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
                         },
                         Err(e) => return Err(e)
                     }

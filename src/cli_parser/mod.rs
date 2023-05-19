@@ -51,10 +51,5 @@ pub enum Commands {
     Hooks {
         #[command(subcommand)]
         commands: hooks::Commands
-    },
-    /// Actions related deliveries (ls)
-    Deliveries {
-        #[command(subcommand)]
-        commands: deliveries::Commands
     }
 }

@@ -60,6 +60,18 @@ async fn main() -> Result<(), types::Exception>{
                         },
                         Err(e) => return Err(e)
                     }
+                },
+                cli_parser::flux::Commands::Hooks { flux_id } => {
+                    let response = network::hooks::get_all_bind_to_flux(&client, flux_id).await;
+
+                    match response {
+                        Ok(flux) => {
+                            for i in 0..flux.len() {
+                                println!("{} - id: {}, url: {}", i, flux[i].id, flux[i].url);
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
                 }
             }
         },
@@ -98,6 +110,34 @@ async fn main() -> Result<(), types::Exception>{
                         },
                         Err(e) => return Err(e)
                     }
+                },
+                cli_parser::webhooks::Commands::Deliveries { webhook_id } => {
+                    let response = network::deliveries::get_all_received(&client, webhook_id).await;
+
+                    match response {
+                        Ok(articles) => {
+                            for i in 0..articles.len() {
+                                println!("{} - id: {}, url: {}, source: {}", 
+                                i, 
+                                articles[i].id, 
+                                if let Some(url) = articles[i].url.clone() { url } else { "".to_string()},
+                                articles[i].sourceId);
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
+                },
+                cli_parser::webhooks::Commands::Hooks { webhook_id } => {
+                    let response = network::hooks::get_all_bind_to_webhook(&client, webhook_id).await;
+
+                    match response {
+                        Ok(webhooks) => {
+                            for i in 0..webhooks.len() {
+                                println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
                 }
             }
         },
@@ -123,6 +163,18 @@ async fn main() -> Result<(), types::Exception>{
                         },
                         Err(e) => return Err(e)
                     }
+                },
+                cli_parser::articles::Commands::Deliveries { article_id } => {
+                    let response = network::deliveries::get_all_receiver(&client, article_id).await;
+
+                    match response {
+                        Ok(webhooks) => {
+                            for i in 0..webhooks.len() {
+                                println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
                 }
             }
         },
@@ -140,68 +192,6 @@ async fn main() -> Result<(), types::Exception>{
 
                     if let Err(e) = response {
                         return Err(e);
-                    }
-                },
-                cli_parser::hooks::Commands::Ls { flux_id, webhook_id } => {
-                    if let Some(id) = flux_id {
-                        let response = network::hooks::get_all_bind_to_flux(&client, id).await;
-
-                        match response {
-                            Ok(flux) => {
-                                for i in 0..flux.len() {
-                                    println!("{} - id: {}, url: {}", i, flux[i].id, flux[i].url);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
-                    }
-                    
-                    if let Some(id) = webhook_id {
-                        let response = network::hooks::get_all_bind_to_webhook(&client, id).await;
-
-                        match response {
-                            Ok(webhooks) => {
-                                for i in 0..webhooks.len() {
-                                    println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
-                    }
-                }
-            }
-        },
-        cli_parser::Commands::Deliveries { commands } => {
-            match commands {
-                cli_parser::deliveries::Commands::Ls { article_id, webhook_id } => {
-                    if let Some(id) = webhook_id {
-                        let response = network::deliveries::get_all_received(&client, id).await;
-
-                        match response {
-                            Ok(articles) => {
-                                for i in 0..articles.len() {
-                                    println!("{} - id: {}, url: {}, source: {}", 
-                                    i, 
-                                    articles[i].id, 
-                                    if let Some(url) = articles[i].url.clone() { url } else { "".to_string()},
-                                    articles[i].sourceId);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
-                    }
-
-                    if let Some(id) = article_id {
-                        let response = network::deliveries::get_all_receiver(&client, id).await;
-
-                        match response {
-                            Ok(webhooks) => {
-                                for i in 0..webhooks.len() {
-                                    println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
                     }
                 }
             }

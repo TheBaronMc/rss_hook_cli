@@ -10,13 +10,6 @@ pub enum Commands {
         flux_id: u64,
         webhook_id: u64
     },
-    /// List all links
-    Ls {
-        #[arg(short, long)]
-        flux_id: Option<u64>,
-        #[arg(short, long)]
-        webhook_id: Option<u64>
-    },
     /// Remove a link
     Del {
         flux_id: u64,

@@ -19,5 +19,9 @@ pub enum Commands {
         flux_url: String
     },
     /// List all RSS Flux
-    Ls {}
+    Ls {},
+    // List all webhooks hooked to a flux 
+    Hooks {
+        flux_id: u64,
+    }
 }

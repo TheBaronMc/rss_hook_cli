@@ -29,7 +29,10 @@ pub struct CliParser {
     pub port: Option<i64>,
     /// No output in terminal
     #[arg(short, long)]
-    pub no_output: bool
+    pub no_output: bool,
+    /// export to CSV
+    #[arg(short, long)]
+    pub export: Option<String>
 }
 
 #[derive(Subcommand)]

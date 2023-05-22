@@ -7,16 +7,21 @@ use clap::Parser;
 
 use cli_parser::CliParser;
 
+use utils::file::{write_all, write};
 use utils::printer::*;
 use utils::printer::article::ArticleFormatter;
 use utils::printer::webhook::WebhookFormatter;
 use utils::printer::flux::FluxFormatter;
+
+use types::Flux;
 
 #[tokio::main]
 async fn main() -> Result<(), types::Exception>{
     let args = CliParser::parse();
 
     let output = !args.no_output;
+
+    let export_path = args.export;
 
     // Server connection
     let mut server = String::from("localhost");
@@ -71,6 +76,19 @@ async fn main() -> Result<(), types::Exception>{
                         Ok(flux) => {
                             if output {
                                 print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<Flux>>::new();
+                                for f in flux {
+                                    v.push(Box::new(f));
+                                }
+
+                                write_all(&path, v);
+
+                                for f in flux {
+                                    write(&path, &f);
+                                }
                             }
                         },
                         Err(e) => return Err(e)

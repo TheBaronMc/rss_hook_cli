@@ -1,4 +1,6 @@
 pub mod printer;
+pub mod file;
+pub mod csv;
 
 use crate::types::Exception;
 use reqwest::{Response, Error};

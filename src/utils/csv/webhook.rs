@@ -15,3 +15,29 @@ impl CSVExport for Webhook {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::types::Webhook;
+    use crate::utils::csv::CSVExport;
+
+    #[test]
+    fn header_test() {
+        let webhook = Webhook {
+            id: 1,
+            url: String::from("http://some.url")
+        };
+
+        assert_eq!(webhook.header(), "id;url");
+    }
+
+    #[test]
+    fn content_test() {
+        let webhook = Webhook {
+            id: 1,
+            url: String::from("http://some.url")
+        };
+
+        assert_eq!(webhook.to_csv(), "1;http://some.url");
+    }
+}

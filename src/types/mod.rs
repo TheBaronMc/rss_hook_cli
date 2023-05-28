@@ -1,19 +1,19 @@
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Flux {
     pub id: u64,
     pub url: String
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Webhook {
     pub id: u64,
     pub url: String
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Article {
     pub id: u64,
     pub title: String,

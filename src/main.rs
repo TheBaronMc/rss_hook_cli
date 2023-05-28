@@ -7,13 +7,12 @@ use clap::Parser;
 
 use cli_parser::CliParser;
 
+use utils::csv::CSVExport;
 use utils::file::{write_all, write};
 use utils::printer::*;
 use utils::printer::article::ArticleFormatter;
 use utils::printer::webhook::WebhookFormatter;
 use utils::printer::flux::FluxFormatter;
-
-use types::Flux;
 
 #[tokio::main]
 async fn main() -> Result<(), types::Exception>{
@@ -51,7 +50,13 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::flux::create(&client, flux_url).await;
 
                     match res {
-                        Ok(flux) => if output { println!("{}", flux.id) },
+                        Ok(flux) => {
+                            if output { println!("{}", flux.id) }
+                            
+                            if let Some(path) = export_path {
+                                write(&path, &flux)?;
+                            }
+                        },
                         Err(e) => return Err(e)
                     }
                 },
@@ -75,20 +80,16 @@ async fn main() -> Result<(), types::Exception>{
                     match res {
                         Ok(flux) => {
                             if output {
-                                print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                                print(Box::new(FluxFormatter::new(Box::new(flux.clone()), formatter_pref)));
                             }
-
+                            
                             if let Some(path) = export_path {
-                                let mut v = Vec::<Box<Flux>>::new();
-                                for f in flux {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for f in flux.into_iter() {
                                     v.push(Box::new(f));
                                 }
 
-                                write_all(&path, v);
-
-                                for f in flux {
-                                    write(&path, &f);
-                                }
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -100,7 +101,16 @@ async fn main() -> Result<(), types::Exception>{
                     match response {
                         Ok(webhooks) => {
                             if output {
-                                print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for webhook in webhooks.into_iter() {
+                                    v.push(Box::new(webhook));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -114,7 +124,13 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::webhook::create(&client, webhook_url).await;
 
                     match res {
-                        Ok(webhook) => if output { println!("{}", webhook.id) },
+                        Ok(webhook) => {
+                            if output { println!("{}", webhook.id) }
+                        
+                            if let Some(path) = export_path {
+                                write(&path, &webhook)?;
+                            }
+                        },
                         Err(e) => return Err(e)
                     }
                 },
@@ -138,7 +154,16 @@ async fn main() -> Result<(), types::Exception>{
                     match res {
                         Ok(webhooks) => {
                             if output {
-                                print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for webhook in webhooks.into_iter() {
+                                    v.push(Box::new(webhook));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -150,7 +175,16 @@ async fn main() -> Result<(), types::Exception>{
                     match response {
                         Ok(articles) => {
                             if output {
-                                print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
+                                print(Box::new(ArticleFormatter::new(Box::new(articles.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for article in articles.into_iter() {
+                                    v.push(Box::new(article));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -162,7 +196,16 @@ async fn main() -> Result<(), types::Exception>{
                     match response {
                         Ok(flux) => {
                             if output {
-                                print(Box::new(FluxFormatter::new(Box::new(flux), formatter_pref)));
+                                print(Box::new(FluxFormatter::new(Box::new(flux.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for f in flux.into_iter() {
+                                    v.push(Box::new(f));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -183,7 +226,16 @@ async fn main() -> Result<(), types::Exception>{
                     match response {
                         Ok(articles) => {
                             if output {
-                                print(Box::new(ArticleFormatter::new(Box::new(articles), formatter_pref)));
+                                print(Box::new(ArticleFormatter::new(Box::new(articles.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for article in articles.into_iter() {
+                                    v.push(Box::new(article));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -195,7 +247,16 @@ async fn main() -> Result<(), types::Exception>{
                     match response {
                         Ok(webhooks) => {
                             if output {
-                                print(Box::new(WebhookFormatter::new(Box::new(webhooks), formatter_pref)));
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for webhook in webhooks.into_iter() {
+                                    v.push(Box::new(webhook));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)

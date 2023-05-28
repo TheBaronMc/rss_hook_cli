@@ -31,6 +31,8 @@ Commands:
 Options:
   -s, --server <SERVER>  [default: localhost]
   -p, --port <PORT>      [default: 3000]
+  -n, --no-output        No output in terminal
+  -e, --export <EXPORT>  export to CSV
   -h, --help             Print help
   -V, --version          Print version
 ```

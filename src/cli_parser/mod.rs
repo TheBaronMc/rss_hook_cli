@@ -2,7 +2,6 @@ pub mod flux;
 pub mod webhooks;
 pub mod hooks;
 pub mod articles;
-pub mod deliveries;
 
 use clap::{Parser, Subcommand};
 
@@ -27,7 +26,13 @@ pub struct CliParser {
     #[arg(short, long, default_value = "localhost")]
     pub server: Option<String>,
     #[arg(short, long, default_value = "3000")]
-    pub port: Option<i64>
+    pub port: Option<i64>,
+    /// No output in terminal
+    #[arg(short, long)]
+    pub no_output: bool,
+    /// export to CSV
+    #[arg(short, long)]
+    pub export: Option<String>
 }
 
 #[derive(Subcommand)]
@@ -51,10 +56,5 @@ pub enum Commands {
     Hooks {
         #[command(subcommand)]
         commands: hooks::Commands
-    },
-    /// Actions related deliveries (ls)
-    Deliveries {
-        #[command(subcommand)]
-        commands: deliveries::Commands
     }
 }

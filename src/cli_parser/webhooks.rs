@@ -19,5 +19,13 @@ pub enum Commands {
         webhook_url: String
     },
     /// List all webhooks
-    Ls { }
+    Ls { },
+    /// List all articles delivered to a webhook
+    Deliveries { 
+        webhook_id: u64
+    },
+    // List all flux hooked to a webhook 
+    Hooks {
+        webhook_id: u64,
+    }
 }

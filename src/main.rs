@@ -7,10 +7,22 @@ use clap::Parser;
 
 use cli_parser::CliParser;
 
+use utils::csv::CSVExport;
+use utils::file::{write_all, write};
+use utils::printer::*;
+use utils::printer::article::ArticleFormatter;
+use utils::printer::webhook::WebhookFormatter;
+use utils::printer::flux::FluxFormatter;
+
 #[tokio::main]
 async fn main() -> Result<(), types::Exception>{
     let args = CliParser::parse();
 
+    let output = !args.no_output;
+
+    let export_path = args.export;
+
+    // Server connection
     let mut server = String::from("localhost");
     let mut port = 3000;
 
@@ -24,6 +36,13 @@ async fn main() -> Result<(), types::Exception>{
 
     let client = network::Client::new(server, port as u64);
 
+    // Formatter
+    let formatter_pref = FormatterPref {
+        max_str_len: 50,
+        column_sep: "|",
+        section_sep: "=",
+    };
+
     match args.commands {
         cli_parser::Commands::Flux { commands } => {
             match commands {
@@ -31,7 +50,13 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::flux::create(&client, flux_url).await;
 
                     match res {
-                        Ok(flux) => println!("Created with id {}", flux.id),
+                        Ok(flux) => {
+                            if output { println!("{}", flux.id) }
+                            
+                            if let Some(path) = export_path {
+                                write(&path, &flux)?;
+                            }
+                        },
                         Err(e) => return Err(e)
                     }
                 },
@@ -54,8 +79,38 @@ async fn main() -> Result<(), types::Exception>{
 
                     match res {
                         Ok(flux) => {
-                            for i in 0..flux.len() {
-                                println!("{} - id: {}, url: {}", i, flux[i].id, flux[i].url);
+                            if output {
+                                print(Box::new(FluxFormatter::new(Box::new(flux.clone()), formatter_pref)));
+                            }
+                            
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for f in flux.into_iter() {
+                                    v.push(Box::new(f));
+                                }
+
+                                write_all(&path, &v)?;
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
+                },
+                cli_parser::flux::Commands::Hooks { flux_id } => {
+                    let response = network::hooks::get_all_bind_to_flux(&client, flux_id).await;
+
+                    match response {
+                        Ok(webhooks) => {
+                            if output {
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for webhook in webhooks.into_iter() {
+                                    v.push(Box::new(webhook));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -69,7 +124,13 @@ async fn main() -> Result<(), types::Exception>{
                     let res = network::webhook::create(&client, webhook_url).await;
 
                     match res {
-                        Ok(webhook) => println!("Created with id {}", webhook.id),
+                        Ok(webhook) => {
+                            if output { println!("{}", webhook.id) }
+                        
+                            if let Some(path) = export_path {
+                                write(&path, &webhook)?;
+                            }
+                        },
                         Err(e) => return Err(e)
                     }
                 },
@@ -92,8 +153,59 @@ async fn main() -> Result<(), types::Exception>{
 
                     match res {
                         Ok(webhooks) => {
-                            for i in 0..webhooks.len() {
-                                println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
+                            if output {
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for webhook in webhooks.into_iter() {
+                                    v.push(Box::new(webhook));
+                                }
+
+                                write_all(&path, &v)?;
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
+                },
+                cli_parser::webhooks::Commands::Deliveries { webhook_id } => {
+                    let response = network::deliveries::get_all_received(&client, webhook_id).await;
+
+                    match response {
+                        Ok(articles) => {
+                            if output {
+                                print(Box::new(ArticleFormatter::new(Box::new(articles.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for article in articles.into_iter() {
+                                    v.push(Box::new(article));
+                                }
+
+                                write_all(&path, &v)?;
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
+                },
+                cli_parser::webhooks::Commands::Hooks { webhook_id } => {
+                    let response = network::hooks::get_all_bind_to_webhook(&client, webhook_id).await;
+
+                    match response {
+                        Ok(flux) => {
+                            if output {
+                                print(Box::new(FluxFormatter::new(Box::new(flux.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for f in flux.into_iter() {
+                                    v.push(Box::new(f));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -113,12 +225,38 @@ async fn main() -> Result<(), types::Exception>{
 
                     match response {
                         Ok(articles) => {
-                            for i in 0..articles.len() {
-                                println!("{} - id: {}, url: {}, source: {}", 
-                                i, 
-                                articles[i].id, 
-                                if let Some(url) = articles[i].url.clone() { url } else { "".to_string()},
-                                articles[i].sourceId);
+                            if output {
+                                print(Box::new(ArticleFormatter::new(Box::new(articles.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for article in articles.into_iter() {
+                                    v.push(Box::new(article));
+                                }
+
+                                write_all(&path, &v)?;
+                            }
+                        },
+                        Err(e) => return Err(e)
+                    }
+                },
+                cli_parser::articles::Commands::Deliveries { article_id } => {
+                    let response = network::deliveries::get_all_receiver(&client, article_id).await;
+
+                    match response {
+                        Ok(webhooks) => {
+                            if output {
+                                print(Box::new(WebhookFormatter::new(Box::new(webhooks.clone()), formatter_pref)));
+                            }
+
+                            if let Some(path) = export_path {
+                                let mut v = Vec::<Box<dyn CSVExport>>::new();
+                                for webhook in webhooks.into_iter() {
+                                    v.push(Box::new(webhook));
+                                }
+
+                                write_all(&path, &v)?;
                             }
                         },
                         Err(e) => return Err(e)
@@ -140,68 +278,6 @@ async fn main() -> Result<(), types::Exception>{
 
                     if let Err(e) = response {
                         return Err(e);
-                    }
-                },
-                cli_parser::hooks::Commands::Ls { flux_id, webhook_id } => {
-                    if let Some(id) = flux_id {
-                        let response = network::hooks::get_all_bind_to_flux(&client, id).await;
-
-                        match response {
-                            Ok(flux) => {
-                                for i in 0..flux.len() {
-                                    println!("{} - id: {}, url: {}", i, flux[i].id, flux[i].url);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
-                    }
-                    
-                    if let Some(id) = webhook_id {
-                        let response = network::hooks::get_all_bind_to_webhook(&client, id).await;
-
-                        match response {
-                            Ok(webhooks) => {
-                                for i in 0..webhooks.len() {
-                                    println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
-                    }
-                }
-            }
-        },
-        cli_parser::Commands::Deliveries { commands } => {
-            match commands {
-                cli_parser::deliveries::Commands::Ls { article_id, webhook_id } => {
-                    if let Some(id) = webhook_id {
-                        let response = network::deliveries::get_all_received(&client, id).await;
-
-                        match response {
-                            Ok(articles) => {
-                                for i in 0..articles.len() {
-                                    println!("{} - id: {}, url: {}, source: {}", 
-                                    i, 
-                                    articles[i].id, 
-                                    if let Some(url) = articles[i].url.clone() { url } else { "".to_string()},
-                                    articles[i].sourceId);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
-                    }
-
-                    if let Some(id) = article_id {
-                        let response = network::deliveries::get_all_receiver(&client, id).await;
-
-                        match response {
-                            Ok(webhooks) => {
-                                for i in 0..webhooks.len() {
-                                    println!("{} - id: {}, url: {}", i, webhooks[i].id, webhooks[i].url);
-                                }
-                            },
-                            Err(e) => return Err(e)
-                        }
                     }
                 }
             }

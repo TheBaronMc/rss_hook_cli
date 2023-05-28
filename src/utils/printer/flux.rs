@@ -25,8 +25,12 @@ impl<'a> FluxFormatter<'a> {
             if id_digits > formatter.max_id_length {
                 formatter.max_id_length = id_digits;
             }
-            if url_len > formatter.current_max_url_length && url_len <= pref.max_str_len {
-                formatter.current_max_url_length = url_len;
+            if url_len > formatter.current_max_url_length {
+                if url_len <= pref.max_str_len {
+                    formatter.current_max_url_length = url_len;
+                } else {
+                    formatter.current_max_url_length = pref.max_str_len;
+                }
             }
         }
 
@@ -49,10 +53,16 @@ impl Formatter<Vec<Flux>> for FluxFormatter<'_> {
 
     fn show_content(&self) {
         for flux in self.flux.iter() {
+            let url = if flux.url.len() > self.formatter_pref.max_str_len as usize {
+                String::from(&flux.url[..47]) + "..."
+            } else {
+                flux.url.clone()
+            };
+
             println!("{} {: <width_id$} {} {: <width_url$} {}", 
                 self.formatter_pref.column_sep, 
                 flux.id,  self.formatter_pref.column_sep,
-                flux.url,  self.formatter_pref.column_sep,
+                url,  self.formatter_pref.column_sep,
                 width_id = self.max_id_length as usize,
                 width_url = self.current_max_url_length as usize,
             );

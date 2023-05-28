@@ -25,8 +25,12 @@ impl<'a> WebhookFormatter<'a> {
             if id_digits > formatter.max_id_length {
                 formatter.max_id_length = id_digits;
             }
-            if url_len > formatter.current_max_url_length && url_len <= pref.max_str_len {
-                formatter.current_max_url_length = url_len;
+            if url_len > formatter.current_max_url_length {
+                if url_len <= pref.max_str_len {
+                    formatter.current_max_url_length = url_len;
+                } else {
+                    formatter.current_max_url_length = pref.max_str_len;
+                }
             }
         }
 
@@ -49,10 +53,16 @@ impl Formatter<Vec<Webhook>> for WebhookFormatter<'_> {
 
     fn show_content(&self) {
         for webhook in self.webhooks.iter() {
+            let url = if webhook.url.len() > self.formatter_pref.max_str_len as usize {
+                String::from(&webhook.url[..47]) + "..."
+            } else {
+                webhook.url.clone()
+            };
+
             println!("{} {: <width_id$} {} {: <width_url$} {}", 
                 self.formatter_pref.column_sep, 
                 webhook.id,  self.formatter_pref.column_sep,
-                webhook.url,  self.formatter_pref.column_sep,
+                url,  self.formatter_pref.column_sep,
                 width_id = self.max_id_length as usize,
                 width_url = self.current_max_url_length as usize,
             );

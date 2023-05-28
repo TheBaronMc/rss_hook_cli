@@ -275,7 +275,12 @@ This application has been developped with rust `v1.6.6`.
 ```
 git clone https://github.com/TheBaronMc/rss_hook_cli.git
 cd rss_hook_cli
+
+cargo test -- --test-threads=1 # Run tests
+
 cargo build --release
+# OR
+cargo install
 ```
 
 The binary must be in `./target/release/rss_hook_cli`.

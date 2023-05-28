@@ -45,8 +45,8 @@ impl Formatter<Vec<Webhook>> for WebhookFormatter<'_> {
             self.formatter_pref.column_sep, 
             "ID",  self.formatter_pref.column_sep,
             "URL",  self.formatter_pref.column_sep,
-            width_id = (self.max_id_length + 1) as usize,
-            width_url = (self.current_max_url_length + 1) as usize,
+            width_id = self.max_id_length as usize,
+            width_url = self.current_max_url_length as usize,
         );
         print_separation(self);
     }
